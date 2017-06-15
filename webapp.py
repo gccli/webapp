@@ -19,8 +19,6 @@ from werkzeug.utils import secure_filename
 #### Create App and configuration
 app = flask.Flask(__name__)
 app.config['verbose'] = 1
-app.config['maxsize'] = 0
-app.config['allow_file_exts'] = ['jpg', 'gif', 'png', 'jpeg', 'doc', 'docx', 'pdf', 'xls', 'xlsx'];
 app.config['root_path'] = '/tmp/upload';
 
 filestore = filestorage.FileStorage(app.config)

@@ -1,31 +1,60 @@
 import os
-import shelve
+import sqlite3
+import logging
 
 class FileStorage(object):
+    schema = '''
+    CREATE TABLE IF NOT EXISTS file(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      file_hash TEXT KEY,
+      file_name TEXT,
+      file_length INTEGER,
+      file_path TEXT,
+      created DATE CURRENT_TIMESTAMP);
+    '''
+
     def __init__(self, config):
         self.root = config['root_path']
-        self.metadata = shelve.open(os.path.join(self.root, 'file.db'))
 
-    def get_last_id(self):
-        if not self.metadata.has_key('id'):
-            last_id = 1
-        else:
-            last_id = int(self.metadata['id']) + 1
-
-        self.metadata['id'] = str(last_id)
-        self.metadata.sync()
-
-        return self.metadata['id']
+    def initialize(self):
+        self.conn = sqlite3.connect(os.path.join(self.root, 'file.db'))
+        cur = self.conn.cursor()
+        cur.execute(self.schema)
+        self.conn.commit()
 
     def add(self, *args):
-        last_id = self.get_last_id()
-        self.metadata[last_id] = args
+        sql = "INSERT INTO file(file_hash,file_name,file_length,file_path) VALUES('{0}','{1}',{2},'{3}')" \
+              .format(*args)
 
-        return file_id
+        cur = self.conn.cursor()
+        try:
+            cur.execute(sql)
+        except:
+            logging.error('sql ({0}) error'.format(sql))
+        last_id = cur.lastrowid
+        self.conn.commit()
 
-    def get(self, file_id):
-        key = str(file_id)
-        if not self.metadata.has_key(key):
+        return last_id
+
+    def get_file_id(self, file_hash):
+        sql = "SELECT id FROM file WHERE file_hash='{0}'".format(file_hash)
+        cur = self.conn.cursor()
+        try:
+            cur.execute(sql)
+        except:
+            logging.error('sql ({0}) error'.format(sql))
             return None
 
-        return self.metadata[key]
+        return cur.fetchone()[0]
+
+    def get(self, file_id):
+        sql = "SELECT file_name,file_length,file_path FROM file WHERE id={0}".format(file_id)
+        cur = self.conn.cursor()
+        try:
+            cur.execute(sql)
+        except:
+            logging.error('sql ({0}) error'.format(sql))
+            return None
+
+        row = cur.fetchone()
+        return (row[0],row[1],row[2])

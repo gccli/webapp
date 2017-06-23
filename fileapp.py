@@ -26,7 +26,8 @@ app.config['maxsize'] = 0
 app.config['root_path'] = '/tmp/upload';
 
 FS = filestorage.FileStorage(app.config)
-FS.initialize()
+if not FS.initialize():
+    sys.exit(1)
 
 def ajax_response(resp):
     return json.dumps(resp)

@@ -17,10 +17,23 @@ class FileStorage(object):
         self.root = config['root_path']
 
     def initialize(self):
-        self.conn = sqlite3.connect(os.path.join(self.root, 'file.db'))
-        cur = self.conn.cursor()
-        cur.execute(self.schema)
-        self.conn.commit()
+        dbpath = os.path.join(self.root, 'file.db')
+        os.makedirs(os.path.dirname(dbpath))
+        try:
+            self.conn = sqlite3.connect(dbpath)
+        except:
+            logging.error("failed to connect to {0}".format(dbpath))
+            return False
+
+        try:
+            cur = self.conn.cursor()
+            cur.execute(self.schema)
+            self.conn.commit()
+        except:
+            logging.error("failed to init DB".format(dbpath))
+            return False
+
+        return True
 
     def add(self, *args):
         sql = "INSERT INTO file(file_hash,file_name,file_length,file_path) VALUES('{0}','{1}',{2},'{3}')" \

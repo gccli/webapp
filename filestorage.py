@@ -18,7 +18,8 @@ class FileStorage(object):
 
     def initialize(self):
         dbpath = os.path.join(self.root, 'file.db')
-        os.makedirs(os.path.dirname(dbpath))
+        if not os.path.isdir(self.root):
+            os.makedirs(self.root)
         try:
             self.conn = sqlite3.connect(dbpath)
         except:

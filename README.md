@@ -5,6 +5,7 @@ A Web App for uploading File to Salesforce
 Nginx Configuration
 -------------------
 
+```
 upstream uwsgiserver {
     server 127.0.0.1:3031;
 }
@@ -30,3 +31,4 @@ server {
       proxy_set_header   X-Forwarded-Host $server_name;
    }
 }
+```
